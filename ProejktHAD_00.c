@@ -13,11 +13,11 @@
 #define LEFT 75 //doleva
 #define RIGHT 77 //doprava
 
-int i, j, field[N][M]; //field - herní pole kde se pohybuje had
-int x, y, Gy, head, tail, game, points; // x,y = cords of snake // game = game loop aby bezela hra dokola //points = body
+int i, j, field[N][M]; //field - herni pole kde se pohybuje had
+int x, y, Gy, head, tail, game, points, HighScore; // x,y = cords of snake // game = game loop aby bezela hra dokola //points = body
 int a, b; // nahodne pozice pointu
 int key, dir; //pohyb
-int gameover;
+
 void snakeProperties() { //inicializace hada
 
     for (i = 0; i < N; i++) {
@@ -33,12 +33,11 @@ void snakeProperties() { //inicializace hada
         Gy++;
         field[x][Gy - head] = i + 1;
     }
-    gameover = 0;
 }
 
 void printBorder() {
 
-    for (int i = 0; i <= M + 1; i++) {  //horni radek
+    for (int i = 0; i <= M + 2; i++) {  //horni radek
         printf("%c", 43);
     }
     printf("\n");
@@ -56,15 +55,11 @@ void printBorder() {
         }
     }
 
-
-    for (int i = 0; i <= M + 1; i++) {    // spodni radek
+    for (int i = 0; i <= M + 2; i++) {    // spodni radek
         printf("%c", 43);
     }
     printf("\n");
 
-    printf("score =");
-    printf("\n");
-    printf("press X to quit the game");
 }
 void ResetScreenPosition() {
 
@@ -87,6 +82,14 @@ void Random() { //nahodna pozice pointu v poli
     }
 }
 
+void konecHry() {
+    Sleep(1500);
+    system("Cls"); //vymaze command prompt
+
+    printf("\n\n\ngame over!!!\n\n\n");
+    game = 1;
+}
+
 int Hit() { //registrace stisku klavesy
     if (_kbhit())
         return _getch();
@@ -94,97 +97,53 @@ int Hit() { //registrace stisku klavesy
         return -1;
 }
 
-/* //nefunknci pohyb pres sipky
+//nefunknci pohyb pres sipky
 void movement() {
     key = Hit();
-
-    if ((((key == RIGHT || key == LEFT) && (abs(dir - key) > 2)) || ((key == UP || key == DOWN)) && (abs(dir - key) > 8))) dir = key; //kontrola, aby had nemohl otocit zpet do sveho tela
+    //kontrola, aby had nemohl otocit zpet do sveho tela
+    if ((key == LEFT && dir != RIGHT) ||
+        (key == RIGHT && dir != LEFT) ||
+        (key == UP && dir != DOWN) ||
+        (key == DOWN && dir != UP))
+        dir = key;
 
     if (dir == UP) { //pohyb nahoru
         x--;
+        if (field[x][y] != 0 && field[x][y] != -1) konecHry();
         head++;
+        if (field[x][y] == -1) points = 0, tail -= 1;
         field[x][y] = head;
-        if (x == 0) x = N - 1; // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale dole
+        //if (x == -1) konecHry(); // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale dole
     }
     if (dir == DOWN) { //pohyb dolu
         x++;
+        if (field[x][y] != 0 && field[x][y] != -1) konecHry();
         head++;
+        if (field[x][y] == -1) points = 0, tail -= 1;
         field[x][y] = head;
-        if (x == N - 1) x = 0; // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale nahore
+        //if (x == N) konecHry(); // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale nahore
     }
     if (dir == RIGHT) { //pohyb doprava
         y++;
+        if (field[x][y] != 0 && field[x][y] != -1) konecHry();
         head++;
+        if (field[x][y] == -1) points = 0, tail -= 1;
         field[x][y] = head;
-        if (y == M - 1) y = 0; // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale vlevo
+        //if (y == M - 1) konecHry(); // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale vlevo
     }
     if (dir == LEFT) { //pohyb doleva
         y--;
+        if (field[x][y] != 0 && field[x][y] != -1) konecHry();
         head++;
+        if (field[x][y] == -1) points = 0, tail -= 1;
         field[x][y] = head;
-        if (y == 0) y = M - 1; // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale vpravo
+        //if (y == 0) konecHry(); // had nemuze prekrocit hranici hraciho pole ale objevi se na stejnem miste ale vpravo
     }
 
-}
-*/
-// funkcni pohyp pres sipky pres switch
-
-int flag;
-void input()
-{
-    if (kbhit()) {
-        switch (getch()) {
-        case LEFT:
-            flag = 1;
-            break;
-        case DOWN:
-            flag = 2;
-            break;
-        case RIGHT:
-            flag = 3;
-            break;
-        case UP:
-            flag = 4;
-            break;
-        }
-    }
-}
-
-void movement_arrows()
-{
-    if ((((flag == RIGHT || flag == LEFT) && (abs(dir - flag) > 2)) || ((flag == UP || flag == DOWN)) && (abs(dir - flag) > 8))) dir = flag;
-    //sleep(0.01);
-    switch (flag) {
-    case 1: //doleva
-        y--;
-        head++;
-        field[x][y] = head;
-        break;
-    case 2: //dolu
-        x++;
-        head++;
-        field[x][y] = head;
-        if (x == N - 1) x = 0;
-        break;
-    case 3: //doprava
-        y++;
-        head++;
-        field[x][y] = head;
-        if (y == M - 1) y = 0;
-        break;
-    case 4: //nahoru
-        x--;
-        head++;
-        field[x][y] = head;
-        if (x == 0) x = N - 1;
-        break;
-    default:
-        break;
-    }
 }
 
 void tailremover() {
-    for (i = 0; i < N; i++) {
+    for (i = 0; i <= N + 2; i++) {
         for (j = 0; j < M; j++) {
             if (field[i][j] == tail) { //konstantni odstranovani konce hada 
                 field[i][j] = 0;
@@ -194,6 +153,8 @@ void tailremover() {
     tail++; //opetovne pridavani konce hada, diky tomu zustava delka konstantni
 }
 
+
+
 void main() {
 
     snakeProperties();
@@ -202,9 +163,7 @@ void main() {
         printBorder();
         ResetScreenPosition();
         Random();
-        //movement();
-        input();
-        movement_arrows();
+        movement();
         tailremover();
         //sleep(99);
     }
